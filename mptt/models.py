@@ -310,6 +310,12 @@ class MPTTModelBase(ModelBase):
         For the weird cases when you need to add tree-ness to an *existing*
         class. For other cases you should subclass MPTTModel instead of calling this.
         """
+        """
+        Added by JCaroll. Convert a set to a tuple. regcore migration 003 fails if set is
+        not converted to a tuple.
+        """
+        def convert(set):
+            return tuple(i for i in set)
 
         if not issubclass(cls, models.Model):
             raise ValueError(_("register() expects a Django model class argument"))
@@ -374,7 +380,8 @@ class MPTTModelBase(ModelBase):
                 # commonly queried (pretty much all reads).
                 index_together = (cls._mptt_meta.tree_id_attr, cls._mptt_meta.left_attr)
                 if index_together not in cls._meta.index_together:
-                    cls._meta.index_together += (index_together,)
+                    # cls._meta.index_together += (index_together,)
+                    cls._meta.index_together = convert(cls._meta.index_together) + (index_together,)
 
             # Add a tree manager, if there isn't one already
             if not abstract:
